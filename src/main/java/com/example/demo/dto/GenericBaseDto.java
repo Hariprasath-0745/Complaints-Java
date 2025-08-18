@@ -10,6 +10,20 @@ public abstract class GenericBaseDto<T> {
     @NotNull
     private Boolean isActive;
 
-    // getters and setters
+    public T getId() {
+        return id;
+    }
+
+    public void setId(T id) {
+        this.id = id;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
 }
 

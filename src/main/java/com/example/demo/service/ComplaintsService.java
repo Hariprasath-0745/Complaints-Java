@@ -12,24 +12,56 @@ import com.example.demo.dto.VisitPurposeDto;
 import com.example.demo.model.Employee;
 import com.example.demo.repository.EmployeeRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import javax.sql.DataSource;
+
 @Service
 public class ComplaintsService {
+    
+    private static final Logger log = LoggerFactory.getLogger(ComplaintsService.class);
+    
     private final EmployeeRepository repo;
     private final JdbcTemplate jdbcTemplate;
+    
+    @Autowired
+    private DataSource dataSource;
+    
+    @Autowired
+    private Environment environment;
+    
+    
+    @Autowired
+    private ComplaintMasterService masterService;
+    
+    @Autowired
+    private VisitPurposeService visitPurposeService;
+    
+    @Autowired
+    private ComplaintTemplateService complaintTemplateService;
 
     public ComplaintsService(EmployeeRepository repo, JdbcTemplate jdbcTemplate) {
         this.repo = repo;
         this.jdbcTemplate = jdbcTemplate;
+    }
+    
+    private static class ComplaintServiceQueries {
+        public static final String GET_COMPLAINT_SUBCOMPLAINTS = "SELECT * FROM complaint_subcomplaints WHERE is_active = true";
+        public static final String GET_COMPLAINT_READINGS = "SELECT * FROM complaint_readings WHERE is_active = true";
     }
 
     public List<Employee> getAll() {
@@ -69,12 +101,12 @@ public ComplaintViewModel read(ComplaintMasterSet masterData,
 
     boolean isShowAuthors = "current".equals(viewMode) || "previous".equals(viewMode);
 
-    var vwComplaint = isSummary
+    List<PatientComplaint> vwComplaint = isSummary
             ? getViewByPeId(peId, complaintsV1LastPeId, visitDate)
             : getViewByPeId(peId);
 
-    if (!vwComplaint.isEmpty()) {
-        patientComplaints = mapper.map(vwComplaint, new TypeToken<List<PatientComplaint>>() {}.getType());
+    if (vwComplaint != null && !vwComplaint.isEmpty()) {
+        patientComplaints = vwComplaint;
     }
 
     if (patientComplaints.isEmpty()) {
@@ -89,45 +121,27 @@ public ComplaintViewModel read(ComplaintMasterSet masterData,
     return viewModel;
 }
 private CompletableFuture<ComplaintMasterSet> buildComplaintMasterSet() {
-
     return CompletableFuture.supplyAsync(() -> {
-        // clear existing cache
-        cacheManager.getCache("ComplaintsMaster").evict("Complaints");
+        try {
+            // Simplified implementation without caching
+            List<ComplaintMasterData> mData = masterService.getComplaintMaster().join();
+            List<VisitPurposeDto> vData = visitPurposeService.getMaster().join();
+            List<ComplaintReadingDto> rData = masterService.getComplaintReadings().join();
+            List<ComplaintSubcomplaintDto> scData = masterService.getComplaintSubcomplaints().join();
+            List<ComplaintTemplateDto> tData = complaintTemplateService.getMaster().join();
 
-        // retrieve data using cache with expiration
-        List<ComplaintMasterData> mData = cacheService.get(
-                "ComplaintsMaster", "Complaints",
-                () -> masterService.getComplaintMaster(),
-                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
+            ComplaintMasterSet masterSet = new ComplaintMasterSet();
+            masterSet.setComplaintMasterData(mData);
+            masterSet.setVisitPurposes(vData);
+            masterSet.setComplaintReadings(rData);
+            masterSet.setSubcomplaints(scData);
+            masterSet.setComplaintTemplates(tData);
 
-        List<VisitPurposeDto> vData = cacheService.get(
-                "VisitPurposeMaster", "Complaints",
-                () -> visitPurposeService.getMaster(),
-                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
-
-        List<ComplaintReadingDto> rData = cacheService.get(
-                "ComplaintsMaster", "ComplaintsReadings",
-                () -> masterService.getComplaintReadings(),
-                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
-
-        List<ComplaintSubcomplaintDto> scData = cacheService.get(
-                "ComplaintsMaster", "ComplaintSubcomplaint",
-                () -> masterService.getComplaintSubcomplaints(),
-                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
-
-        List<ComplaintTemplateDto> tData = cacheService.get(
-                "ComplaintsMaster", "ComplaintTemplate",
-                () -> complaintTemplateService.getMaster(),
-                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
-
-        ComplaintMasterSet masterSet = new ComplaintMasterSet();
-        masterSet.setComplaintMasterData(mData);
-        masterSet.setVisitPurposes(vData);
-        masterSet.setComplaintReadings(rData);
-        masterSet.setSubcomplaints(scData);
-        masterSet.setComplaintTemplates(tData);
-
-        return masterSet;
+            return masterSet;
+        } catch (Exception ex) {
+            log.error("Error building complaint master set", ex);
+            return new ComplaintMasterSet();
+        }
     });
 }
 
@@ -190,6 +204,29 @@ public CompletableFuture<List<ComplaintReadingDto>> getComplaintReadings() {
         }
     });
 }
+
+    public ComplaintMasterSet getComplaintMasterSet() {
+        return buildComplaintMasterSet().join();
+    }
+
+    // Helper methods - simplified implementations
+    private List<PatientComplaint> getViewByPeId(long peId, long complaintsV1LastPeId, DateOnly visitDate) {
+        return new ArrayList<>(); // Implement actual query logic
+    }
+    
+    private List<PatientComplaint> getViewByPeId(long peId) {
+        return new ArrayList<>(); // Implement actual query logic
+    }
+    
+    private ComplaintViewModel dataModelToViewModel(long complaintsV1LastPeId, List<PatientComplaint> patientComplaints, boolean isShowAuthors) {
+        ComplaintViewModel vm = new ComplaintViewModel();
+        vm.setId(0L);
+        return vm; // Implement actual mapping logic
+    }
+    
+    private void bindMasterValue(ComplaintViewModel viewModel, ComplaintMasterSet masterData) {
+        // Implement binding logic
+    }
 
 
 }

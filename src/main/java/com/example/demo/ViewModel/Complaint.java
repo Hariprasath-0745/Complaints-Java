@@ -1,5 +1,7 @@
 package com.example.demo.ViewModel;
 
+import java.util.List;
+
 public class Complaint {
 
     private String complaintInformant;

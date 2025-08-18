@@ -6,6 +6,28 @@ public class ComplaintReadingDto extends BaseDto {
     private long resultId;
     private int sequence;
 
-    // getters and setters
+    public long getComplaintSubcomplaintId() {
+        return complaintSubcomplaintId;
+    }
+
+    public void setComplaintSubcomplaintId(long complaintSubcomplaintId) {
+        this.complaintSubcomplaintId = complaintSubcomplaintId;
+    }
+
+    public long getResultId() {
+        return resultId;
+    }
+
+    public void setResultId(long resultId) {
+        this.resultId = resultId;
+    }
+
+    public int getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(int sequence) {
+        this.sequence = sequence;
+    }
 }
 

@@ -7,6 +7,36 @@ public class ComplaintTemplateDto extends BaseDto {
     private long deptId;
     private int siteId;
 
-    // getters and setters
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    public String getTemplateText() {
+        return templateText;
+    }
+
+    public void setTemplateText(String templateText) {
+        this.templateText = templateText;
+    }
+
+    public long getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(long deptId) {
+        this.deptId = deptId;
+    }
+
+    public int getSiteId() {
+        return siteId;
+    }
+
+    public void setSiteId(int siteId) {
+        this.siteId = siteId;
+    }
 }
 

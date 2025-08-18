@@ -1,11 +1,31 @@
 package com.example.demo.service;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import com.example.demo.dto.ComplaintTemplateDto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Service;
 
+import com.example.demo.Entity.ComplaintTemplate;
+import com.example.demo.dto.ComplaintTemplateDto;
+import com.example.demo.repository.ComplaintTemplateRepository;
+
+@Service
 public class ComplaintTemplateService {
+    
+    private static final Logger log = LoggerFactory.getLogger(ComplaintTemplateService.class);
+    
+private final ComplaintTemplateRepository complaintTemplateRepository;
+
+    @Autowired
+    public ComplaintTemplateService(ComplaintTemplateRepository complaintTemplateRepository) {
+        this.complaintTemplateRepository = complaintTemplateRepository;
+    }
 
     public CompletableFuture<List<ComplaintTemplateDto>> getMaster() {
 

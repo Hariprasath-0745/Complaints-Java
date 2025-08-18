@@ -6,6 +6,8 @@ import com.example.demo.model.Employee;
 import com.example.demo.service.ComplaintsService;
 
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,9 @@ import java.util.List;
 @RequestMapping("/api/employees")
 public class ComplaintsController {
     private final ComplaintsService service;
+    
+    @Autowired
+    private Environment environment;
 
     public ComplaintsController(ComplaintsService service) {
         this.service = service;
@@ -64,7 +69,7 @@ public ResponseEntity<?> summary(@PathVariable long peId,
 
     DateOnly visitDate = (vDate == null || vDate.equals("0")) ?
             null :
-            DateOnly.parse(vDate, CultureInfo.InvariantCulture);
+            DateOnly.parse(vDate); // Simplified - removed CultureInfo dependency
 
     ComplaintMasterSet masterData = service.getComplaintMasterSet();
 
