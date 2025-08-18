@@ -1,12 +1,13 @@
 package com.example.demo.Entity;
+
 import java.time.OffsetDateTime;
 
-import org.antlr.v4.runtime.misc.NotNull;
-
 import jakarta.persistence.Column;
-import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
+@MappedSuperclass
 public abstract class AuditEntity extends BaseEntity {
 
     @Column(name = "is_deleted", nullable = false)

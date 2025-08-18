@@ -1,21 +1,31 @@
 package com.example.demo.Entity;
 
-import org.antlr.v4.runtime.misc.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
+@Entity
+@Table(name = "complaint_templates")
 public class ComplaintTemplate extends AuditEntity {
 
     @NotNull
     @Size(max = 20)
+    @Column(name = "template_name", length = 20, nullable = false)
     private String templateName = "";
 
     @NotNull
     @Size(max = 8000)
+    @Column(name = "template_text", length = 8000, nullable = false)
     private String templateText = "";
 
     @NotNull
+    @Column(name = "dept_id", nullable = false)
     private Long deptId;
 
     @NotNull
+    @Column(name = "site_id", nullable = false)
     private Integer siteId;
 
     public String getTemplateName() {

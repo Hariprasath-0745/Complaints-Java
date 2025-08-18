@@ -1,9 +1,9 @@
 package com.example.demo.Entity;
-import org.antlr.v4.runtime.misc.NotNull;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.NotNull;
 
 @MappedSuperclass
 public abstract class GenericBaseEntity<T> {
