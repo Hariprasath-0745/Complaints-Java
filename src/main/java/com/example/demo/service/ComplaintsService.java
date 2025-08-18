@@ -310,5 +310,54 @@ private boolean isAddedRedness(List<ComplaintDetail> details) {
                     && d.getComplaintId() == ComplaintsConstants.REDNESS_ID);
 }
 
+public ComplaintViewModel abiComplaintList(List<ComplaintMasterData> masterData, long peId) {
+
+    // var results = await _patientComplaintRepository.AbiComplaintSummary(peId);
+    List<VwPatientComplaint> results = abiComplaintSummary(peId);
+
+    if (results != null && !results.isEmpty()) {
+
+        // keep only items that have ComplaintId
+        List<VwPatientComplaint> details = results.stream()
+                .filter(r -> r.getComplaintId() != null && r.getComplaintId() != 0)
+                .collect(Collectors.toList());
+
+        // group by ComplaintId and take only one item from each group
+        List<VwPatientComplaint> grouped =
+                details.stream()
+                       .collect(Collectors.groupingBy(VwPatientComplaint::getComplaintId))
+                       .values()
+                       .stream()
+                       .map(list -> list.get(0))
+                       .collect(Collectors.toList());
+
+        // map to PatientComplaint
+        List<PatientComplaint> complaints =
+                mapper.map(grouped, new TypeToken<List<PatientComplaint>>(){}.getType());
+
+        // build viewModel
+        ComplaintViewModel viewModel = dataModelToViewModel(0L, complaints, false);
+
+        if (viewModel != null && masterData != null) {
+            List<ComplaintDetail> complaintDetails =
+                    viewModel.getComplaint() != null
+                            ? viewModel.getComplaint().getComplaintDetails()
+                            : null;
+
+            if (complaintDetails != null) {
+                mapComplaintsName(complaintDetails, masterData, null, null);
+            }
+        }
+
+        return viewModel;
+    }
+
+    // no data
+    ComplaintViewModel empty = new ComplaintViewModel();
+    empty.setId(0L);
+    return empty;
+}
+
+
 }
 

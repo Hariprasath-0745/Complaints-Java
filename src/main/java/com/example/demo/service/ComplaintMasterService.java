@@ -201,4 +201,38 @@ public CompletableFuture<List<ComplaintReadingDto>> getComplaintReadings() {
     });
 }
     
+@GetMapping("/abiComplaintList/{peId}")
+public ResponseEntity<?> abiComplaintList(@PathVariable long peId) {
+
+    try {
+        // cache lookup for complaint master data
+        List<ComplaintMasterData> masterData = cacheService.get(
+                "ComplaintsMaster",
+                "Complaints",
+                () -> masterService.getComplaintMaster(),
+                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds())
+        );
+
+        ComplaintViewModel data = service.abiComplaintList(masterData, peId);
+        return ResponseEntity.ok(data);
+
+    } catch (BadRequestException brex) {
+        log.warn(brex.getMessage(), brex);
+        return ResponseEntity.badRequest()
+                .body(Collections.singletonMap("Message", brex.getMessage()));
+    } catch (NotFoundException nfx) {
+        log.warn(nfx.getMessage(), nfx);
+        Map<String,Object> body = new HashMap<>();
+        body.put("Source", nfx.getSource());
+        body.put("Message", nfx.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    } catch (Exception ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(417)
+                .body(Collections.singletonMap("Message", ex.getMessage()));
+    }
+}
+
+
+
 }
