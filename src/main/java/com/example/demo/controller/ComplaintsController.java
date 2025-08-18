@@ -1,9 +1,12 @@
 package com.example.demo.controller;
 
+import com.example.demo.Helper.CommonHelper;
 import com.example.demo.ViewModel.ComplaintViewModel;
+import com.example.demo.dto.ComplaintInfo;
 import com.example.demo.dto.ComplaintMasterSet;
-import com.example.demo.model.Employee;
 import com.example.demo.service.ComplaintsService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,10 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/employees")
+@RequestMapping("/api/complaint")
 public class ComplaintsController {
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ComplaintsController.class);
     private final ComplaintsService service;
 
     @Autowired
@@ -86,16 +91,6 @@ public ResponseEntity<?> getData(@PathVariable long peId) {
             empty.setId(0L);
             return ResponseEntity.ok(empty);
         }
-    } catch (BadRequestException brex) {
-        log.warn(brex.getMessage(), brex);
-        return ResponseEntity.badRequest()
-                .body(Collections.singletonMap("Message", brex.getMessage()));
-    } catch (NotFoundException nfx) {
-        log.warn(nfx.getMessage(), nfx);
-        Map<String,Object> body = new HashMap<>();
-        body.put("Source", nfx.getSource());
-        body.put("Message", nfx.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     } catch (Exception ex) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(417)
@@ -117,16 +112,6 @@ public ResponseEntity<?> create(@PathVariable String uId,
 
         return ResponseEntity.ok(response);
 
-    } catch (BadRequestException brex) {
-        log.warn(brex.getMessage(), brex);
-        return ResponseEntity.badRequest()
-                .body(Collections.singletonMap("Message", brex.getMessage()));
-    } catch (NotFoundException nfx) {
-        log.warn(nfx.getMessage(), nfx);
-        Map<String,Object> body = new HashMap<>();
-        body.put("Source", nfx.getSource());
-        body.put("Message", nfx.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     } catch (Exception ex) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity.status(417)

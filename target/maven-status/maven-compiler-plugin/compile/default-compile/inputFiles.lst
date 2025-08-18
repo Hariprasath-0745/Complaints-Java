@@ -3,6 +3,7 @@ C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\de
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\controller\DateOnly.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\DemoApiApplication.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\dto\BaseDto.java
+C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\dto\ComplaintInfo.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\dto\ComplaintMasterData.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\dto\ComplaintMasterSet.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\dto\ComplaintReadingDto.java
@@ -27,7 +28,10 @@ C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\de
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Entity\PatientComplaintTraumaBase.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Entity\Size.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Entity\VisitPurpose.java
-C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\model\Employee.java
+C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Entity\VwPatientComplaint.java
+C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Helper\CommonHelper.java
+C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Model\Employee.java
+C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\Model\UserLogDetail.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\repository\ComplaintTemplateRepository.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\repository\EmployeeRepository.java
 C:\Users\01071378\Desktop\comp-java\Complaints-Java\src\main\java\com\example\demo\service\ComplaintMasterService.java
