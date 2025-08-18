@@ -227,6 +227,27 @@ public CompletableFuture<List<ComplaintReadingDto>> getComplaintReadings() {
     private void bindMasterValue(ComplaintViewModel viewModel, ComplaintMasterSet masterData) {
         // Implement binding logic
     }
+public boolean checkPeids(long peId) {
+
+    String sql = ComplaintServiceQueries.CHECK_PEIDS;
+
+    try (Connection conn = dataSource.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setLong(1, peId);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getBoolean(1);
+            }
+        }
+
+    } catch (Exception ex) {
+        log.error("Error checking PeIds", ex);
+    }
+
+    return false;
+}
 
 
 }

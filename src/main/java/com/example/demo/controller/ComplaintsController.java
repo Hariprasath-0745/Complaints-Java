@@ -40,25 +40,7 @@ public class ComplaintsController {
             return ResponseEntity.status(417).body( ex.getMessage());
         }
     }
-    @GetMapping
-    public List<Employee> all() {
-        return service.getAll();
-    }
-
-    @GetMapping("/{id}")
-    public Employee one(@PathVariable Long id) {
-        return service.getById(id);
-    }
-
-    @PostMapping
-    public Employee create(@RequestBody Employee e) {
-        return service.save(e);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) {
-        service.delete(id);
-    }
+   
 
     @GetMapping("/summary/{peId}/{vDate}/{viewMode}")
 public ResponseEntity<?> summary(@PathVariable long peId,
@@ -81,10 +63,41 @@ public ResponseEntity<?> summary(@PathVariable long peId,
 
     } 
     catch (Exception ex) {
-        //log.error(ex.getMessage(), ex);
+        log.error(ex.getMessage(), ex);
         return ResponseEntity.status(417)
                 .body(Collections.singletonMap("Message", ex.getMessage()));
     }
 }
+@GetMapping("/data/{peId}")
+public ResponseEntity<?> getData(@PathVariable long peId) {
+    try {
+        if (service.checkPeids(peId)) {
+            ComplaintMasterSet masterData = service.getComplaintMasterSet();
+            ComplaintViewModel data =
+                    service.read(masterData, peId, 0L, null, false, "0");
+
+            return ResponseEntity.ok(data);
+        } else {
+            ComplaintViewModel empty = new ComplaintViewModel();
+            empty.setId(0L);
+            return ResponseEntity.ok(empty);
+        }
+    } catch (BadRequestException brex) {
+        log.warn(brex.getMessage(), brex);
+        return ResponseEntity.badRequest()
+                .body(Collections.singletonMap("Message", brex.getMessage()));
+    } catch (NotFoundException nfx) {
+        log.warn(nfx.getMessage(), nfx);
+        Map<String,Object> body = new HashMap<>();
+        body.put("Source", nfx.getSource());
+        body.put("Message", nfx.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    } catch (Exception ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(417)
+                .body(Collections.singletonMap("Message", ex.getMessage()));
+    }
+}
+
 
 }
