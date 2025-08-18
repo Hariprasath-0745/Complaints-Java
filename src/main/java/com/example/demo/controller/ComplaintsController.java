@@ -1,18 +1,26 @@
 package com.example.demo.controller;
 
+import com.example.demo.ViewModel.ComplaintViewModel;
+import com.example.demo.dto.ComplaintMasterSet;
 import com.example.demo.model.Employee;
-import com.example.demo.service.ComplaintService;
+import com.example.demo.service.ComplaintsService;
+
+import org.apache.coyote.BadRequestException;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/employees")
 public class ComplaintsController {
-    private final ComplaintService service;
+    private final ComplaintsService service;
 
-    public ComplaintsController(ComplaintService service) {
+    public ComplaintsController(ComplaintsService service) {
         this.service = service;
     }
 @GetMapping("/check-trauma")
@@ -46,4 +54,32 @@ public class ComplaintsController {
     public void delete(@PathVariable Long id) {
         service.delete(id);
     }
+
+    @GetMapping("/summary/{peId}/{vDate}/{viewMode}")
+public ResponseEntity<?> summary(@PathVariable long peId,
+                                 @PathVariable String vDate,
+                                 @PathVariable String viewMode) {
+
+    long complaintsV1LastPeId = Long.parseLong(environment.getProperty("ComplaintsV1LastPeId"));
+
+    DateOnly visitDate = (vDate == null || vDate.equals("0")) ?
+            null :
+            DateOnly.parse(vDate, CultureInfo.InvariantCulture);
+
+    ComplaintMasterSet masterData = service.getComplaintMasterSet();
+
+    try {
+        ComplaintViewModel data =
+                service.read(masterData, peId, complaintsV1LastPeId, visitDate, true, viewMode);
+
+        return ResponseEntity.ok(data);
+
+    } 
+    catch (Exception ex) {
+        //log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(417)
+                .body(Collections.singletonMap("Message", ex.getMessage()));
+    }
+}
+
 }
