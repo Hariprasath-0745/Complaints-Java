@@ -21,12 +21,16 @@ import java.util.List;
 @RequestMapping("/api/employees")
 public class ComplaintsController {
     private final ComplaintsService service;
-    
+
+    @Autowired
+    private CommonHelper commonHelper;
+
     @Autowired
     private Environment environment;
 
-    public ComplaintsController(ComplaintsService service) {
+    public ComplaintsController(ComplaintsService service, CommonHelper commonHelper) {
         this.service = service;
+        this.commonHelper = commonHelper;
     }
 @GetMapping("/check-trauma")
     public ResponseEntity<?> checkTrauma(@RequestParam  String uId) {
@@ -98,6 +102,38 @@ public ResponseEntity<?> getData(@PathVariable long peId) {
                 .body(Collections.singletonMap("Message", ex.getMessage()));
     }
 }
+
+@PostMapping("/{uId}/{peId}/{departmentId}/{createdBy}")
+public ResponseEntity<?> create(@PathVariable String uId,
+                                @PathVariable long peId,
+                                @PathVariable int departmentId,
+                                @PathVariable int createdBy,
+                                @RequestBody ComplaintViewModel viewModel,
+                                HttpServletRequest request) {
+    try {
+        String clientIp = commonHelper.getClientIp(request);
+        ComplaintInfo response =
+                service.create(uId, peId, departmentId, createdBy, clientIp, viewModel);
+
+        return ResponseEntity.ok(response);
+
+    } catch (BadRequestException brex) {
+        log.warn(brex.getMessage(), brex);
+        return ResponseEntity.badRequest()
+                .body(Collections.singletonMap("Message", brex.getMessage()));
+    } catch (NotFoundException nfx) {
+        log.warn(nfx.getMessage(), nfx);
+        Map<String,Object> body = new HashMap<>();
+        body.put("Source", nfx.getSource());
+        body.put("Message", nfx.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    } catch (Exception ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(417)
+                .body(Collections.singletonMap("Message", ex.getMessage()));
+    }
+}
+
 
 
 }

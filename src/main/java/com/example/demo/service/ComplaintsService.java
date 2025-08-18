@@ -249,6 +249,66 @@ public boolean checkPeids(long peId) {
     return false;
 }
 
+public ComplaintInfo create(String uId,
+                            long peId,
+                            int departmentId,
+                            int createdBy,
+                            String clientIp,
+                            ComplaintViewModel viewModel) {
+
+    LocalDate visitDate = DateTimeHelper
+            .getTimeZoneFromSettings(applicationProperties.getTz())
+            .toLocalDate();
+
+    boolean exists = patientComplaintRepository.existsByPeIdAndEnteredDate(peId, visitDate);
+
+    UserLogDetail userLogDetail = new UserLogDetail();
+    userLogDetail.setCreatedAt(OffsetDateTime.now(ZoneOffset.UTC));
+    userLogDetail.setCreatedBy(createdBy);
+    userLogDetail.setCreatedIp(clientIp != null ? clientIp : "");
+    userLogDetail.setCreatedDeptId(departmentId);
+    userLogDetail.setUpdatedAt(null);
+    userLogDetail.setUpdatedBy(0);
+    userLogDetail.setUpdatedIp("");
+    userLogDetail.setUpdatedDeptId(0);
+
+    if (exists) {
+        return update(uId, peId, departmentId, createdBy, clientIp, viewModel);
+    } else {
+        List<PatientComplaint> entities =
+                viewModelToDataModel(uId, peId, userLogDetail, viewModel);
+
+        patientComplaintRepository.saveAll(entities);
+
+        try {
+            unitOfWork.saveChanges();
+
+            ComplaintInfo info = new ComplaintInfo();
+            info.setIsOcularTrauma(isAddedOcularTrauma(viewModel.getComplaint().getComplaintDetails()));
+            info.setIsRedness(isAddedRedness(viewModel.getComplaint().getComplaintDetails()));
+            return info;
+
+        } catch (Exception ex) {
+            ComplaintInfo info = new ComplaintInfo();
+            info.setError(
+                    ex.getCause() != null
+                            ? ex.getCause().getMessage()
+                            : ex.getMessage()
+            );
+            return info;
+        }
+    }
+}
+private boolean isAddedOcularTrauma(List<ComplaintDetail> details) {
+    return details != null && details.stream()
+            .anyMatch(d -> d.getComplaintTrauma() != null && !d.getComplaintTrauma().isEmpty());
+}
+
+private boolean isAddedRedness(List<ComplaintDetail> details) {
+    return details != null && details.stream()
+            .anyMatch(d -> !d.isNoHistory()
+                    && d.getComplaintId() == ComplaintsConstants.REDNESS_ID);
+}
 
 }
 
