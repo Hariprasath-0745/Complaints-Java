@@ -3,16 +3,24 @@ package com.example.demo.service;
 import com.example.demo.Entity.PatientComplaint;
 import com.example.demo.ViewModel.ComplaintViewModel;
 import com.example.demo.controller.DateOnly;
+import com.example.demo.dto.ComplaintMasterData;
 import com.example.demo.dto.ComplaintMasterSet;
+import com.example.demo.dto.ComplaintReadingDto;
+import com.example.demo.dto.ComplaintSubcomplaintDto;
+import com.example.demo.dto.ComplaintTemplateDto;
+import com.example.demo.dto.VisitPurposeDto;
 import com.example.demo.model.Employee;
 import com.example.demo.repository.EmployeeRepository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class ComplaintsService {
@@ -79,6 +87,108 @@ public ComplaintViewModel read(ComplaintMasterSet masterData,
     bindMasterValue(viewModel, masterData);
 
     return viewModel;
+}
+private CompletableFuture<ComplaintMasterSet> buildComplaintMasterSet() {
+
+    return CompletableFuture.supplyAsync(() -> {
+        // clear existing cache
+        cacheManager.getCache("ComplaintsMaster").evict("Complaints");
+
+        // retrieve data using cache with expiration
+        List<ComplaintMasterData> mData = cacheService.get(
+                "ComplaintsMaster", "Complaints",
+                () -> masterService.getComplaintMaster(),
+                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
+
+        List<VisitPurposeDto> vData = cacheService.get(
+                "VisitPurposeMaster", "Complaints",
+                () -> visitPurposeService.getMaster(),
+                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
+
+        List<ComplaintReadingDto> rData = cacheService.get(
+                "ComplaintsMaster", "ComplaintsReadings",
+                () -> masterService.getComplaintReadings(),
+                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
+
+        List<ComplaintSubcomplaintDto> scData = cacheService.get(
+                "ComplaintsMaster", "ComplaintSubcomplaint",
+                () -> masterService.getComplaintSubcomplaints(),
+                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
+
+        List<ComplaintTemplateDto> tData = cacheService.get(
+                "ComplaintsMaster", "ComplaintTemplate",
+                () -> complaintTemplateService.getMaster(),
+                Duration.ofSeconds(applicationProperties.getRedisCacheExpirySeconds()));
+
+        ComplaintMasterSet masterSet = new ComplaintMasterSet();
+        masterSet.setComplaintMasterData(mData);
+        masterSet.setVisitPurposes(vData);
+        masterSet.setComplaintReadings(rData);
+        masterSet.setSubcomplaints(scData);
+        masterSet.setComplaintTemplates(tData);
+
+        return masterSet;
+    });
+}
+
+public CompletableFuture<List<ComplaintSubcomplaintDto>> getComplaintSubcomplaints() {
+
+    return CompletableFuture.supplyAsync(() -> {
+        String sql = ComplaintServiceQueries.GET_COMPLAINT_SUBCOMPLAINTS;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            List<ComplaintSubcomplaintDto> list = new ArrayList<>();
+            while (rs.next()) {
+                ComplaintSubcomplaintDto dto = new ComplaintSubcomplaintDto();
+                dto.setId(rs.getLong("Id"));
+                dto.setComplaintId(rs.getLong("ComplaintId"));
+                dto.setSubcomplaintId(rs.getLong("SubcomplaintId"));
+                dto.setSequence(rs.getInt("Sequence"));
+                dto.setIsActive(rs.getBoolean("IsActive"));
+                list.add(dto);
+            }
+            return list;
+
+        } catch (Exception ex) {
+            log.error("Error getting complaint subcomplaints", ex);
+            return Collections.emptyList();
+        }
+    });
+}
+
+public CompletableFuture<List<ComplaintReadingDto>> getComplaintReadings() {
+
+    return CompletableFuture.supplyAsync(() -> {
+        String sql = ComplaintServiceQueries.GET_COMPLAINT_READINGS;
+
+        if (sql == null || sql.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            List<ComplaintReadingDto> list = new ArrayList<>();
+            while (rs.next()) {
+                ComplaintReadingDto dto = new ComplaintReadingDto();
+                dto.setId(rs.getLong("Id"));
+                dto.setComplaintSubcomplaintId(rs.getLong("ComplaintSubcomplaintId"));
+                dto.setResultId(rs.getLong("ResultId"));
+                dto.setSequence(rs.getInt("Sequence"));
+                dto.setIsActive(rs.getBoolean("IsActive"));
+                list.add(dto);
+            }
+            return list;
+
+        } catch (Exception ex) {
+            log.error("Error getting complaint readings", ex);
+            return Collections.emptyList();
+        }
+    });
 }
 
 

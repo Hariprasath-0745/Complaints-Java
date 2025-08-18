@@ -3,12 +3,15 @@ package com.example.demo.service;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.example.demo.ViewModel.Complaint;
 import com.example.demo.ViewModel.SubComplaint;
 import com.example.demo.dto.ComplaintMasterData;
+import com.example.demo.dto.ComplaintReadingDto;
+import com.example.demo.dto.ComplaintSubcomplaintDto;
 import com.example.demo.Entity.Master.*;
 
 public class ComplaintMasterService {
@@ -106,6 +109,64 @@ public class ComplaintMasterService {
         }
     });
 }
+public CompletableFuture<List<ComplaintSubcomplaintDto>> getComplaintSubcomplaints() {
 
+    return CompletableFuture.supplyAsync(() -> {
+        String sql = ComplaintServiceQueries.GET_COMPLAINT_SUBCOMPLAINTS;
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            List<ComplaintSubcomplaintDto> list = new ArrayList<>();
+            while (rs.next()) {
+                ComplaintSubcomplaintDto dto = new ComplaintSubcomplaintDto();
+                dto.setId(rs.getLong("Id"));
+                dto.setComplaintId(rs.getLong("ComplaintId"));
+                dto.setSubcomplaintId(rs.getLong("SubcomplaintId"));
+                dto.setSequence(rs.getInt("Sequence"));
+                dto.setIsActive(rs.getBoolean("IsActive"));
+                list.add(dto);
+            }
+            return list;
+
+        } catch (Exception ex) {
+            log.error("Error getting complaint subcomplaints", ex);
+            return Collections.emptyList();
+        }
+    });
+}
+
+public CompletableFuture<List<ComplaintReadingDto>> getComplaintReadings() {
+
+    return CompletableFuture.supplyAsync(() -> {
+        String sql = ComplaintServiceQueries.GET_COMPLAINT_READINGS;
+
+        if (sql == null || sql.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            List<ComplaintReadingDto> list = new ArrayList<>();
+            while (rs.next()) {
+                ComplaintReadingDto dto = new ComplaintReadingDto();
+                dto.setId(rs.getLong("Id"));
+                dto.setComplaintSubcomplaintId(rs.getLong("ComplaintSubcomplaintId"));
+                dto.setResultId(rs.getLong("ResultId"));
+                dto.setSequence(rs.getInt("Sequence"));
+                dto.setIsActive(rs.getBoolean("IsActive"));
+                list.add(dto);
+            }
+            return list;
+
+        } catch (Exception ex) {
+            log.error("Error getting complaint readings", ex);
+            return Collections.emptyList();
+        }
+    });
+}
     
 }
