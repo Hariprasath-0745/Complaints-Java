@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.Helper.CommonHelper;
 import com.example.demo.ViewModel.ComplaintViewModel;
 import com.example.demo.dto.ComplaintInfo;
+import com.example.demo.dto.ComplaintMasterData;
 import com.example.demo.dto.ComplaintMasterSet;
 import com.example.demo.service.ComplaintsService;
 
@@ -56,7 +57,7 @@ public ResponseEntity<?> summary(@PathVariable long peId,
                                  @PathVariable String vDate,
                                  @PathVariable String viewMode) {
 
-    long complaintsV1LastPeId = Long.parseLong(environment.getProperty("ComplaintsV1LastPeId"));
+    long complaintsV1LastPeId = 164869447;
 
     DateOnly visitDate = (vDate == null || vDate.equals("0")) ?
             null :
@@ -119,6 +120,22 @@ public ResponseEntity<?> create(@PathVariable String uId,
     }
 }
 
+@GetMapping("/abiComplaintList/{peId}")
+public ResponseEntity<?> abiComplaintList(@PathVariable long peId) {
 
+    try {
+        // Get complaint master data from service
+        ComplaintMasterSet masterSet = service.getComplaintMasterSet();
+        List<ComplaintMasterData> masterData = masterSet.getComplaintMasterData();
+
+        ComplaintViewModel data = service.abiComplaintList(masterData, peId);
+        return ResponseEntity.ok(data);
+
+    } catch (Exception ex) {
+        log.error(ex.getMessage(), ex);
+        return ResponseEntity.status(417)
+                .body(Collections.singletonMap("Message", ex.getMessage()));
+    }
+}
 
 }
