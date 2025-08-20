@@ -9,5 +9,35 @@ public class SubcomplaintData {
     private boolean isActive;
     private List<ComplaintResultData> results;
 
-    // getters and setters
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public String getSubcomplaintText() {
+        return subcomplaintText;
+    }
+
+    public void setSubcomplaintText(String subcomplaintText) {
+        this.subcomplaintText = subcomplaintText;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public List<ComplaintResultData> getResults() {
+        return results;
+    }
+
+    public void setResults(List<ComplaintResultData> results) {
+        this.results = results;
+    }
 }
